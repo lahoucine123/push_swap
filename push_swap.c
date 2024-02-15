@@ -6,21 +6,24 @@
 /*   By: laoubaid <laoubaid@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 13:03:22 by laoubaid          #+#    #+#             */
-/*   Updated: 2024/02/13 15:12:39 by laoubaid         ###   ########.fr       */
+/*   Updated: 2024/02/14 21:55:38 by laoubaid         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "swap.h"
 
-int		get_best_mov(t_stack *stk, int index, int proximate, int conf)
+int		get_best_mov(t_stack *stk, int index, int proximate, int *conf)
 {
-	if (conf)
+	if (*conf)
 		while (stk)
 		{
 			if (stk->order >= index && stk->order <= index + proximate)
 				return (stk->order);
 			else if (stk->order < index)
+			{
+				*conf = 0;
 				return (stk->order);
+			}
 			stk = stk->next;
 		}
 	else
@@ -70,30 +73,38 @@ void	push_to_b(t_stack **a, t_stack **b, int index, char *opr)
 	push(a, b);
 }
 
+int	rotate_one(t_stack **stk)
+{
+	write(1, "rb\n", 3);
+	shiftup(stk);
+	return (1);
+}
+
 void	push_swap(t_stack **a, t_stack **b, int n, int conf)
 {
-	int		proximate;
-	int	i, index;
+	int	proximate;
+	int	i;
+	int index;
 
-	proximate = 12;
+	proximate = 30;
 	i = 0;
 	best_way_top(*a, ft_lstsize(*a));
 	best_way_top(*b, ft_lstsize(*b));
 	if (conf)
 		while (i < n)
 		{
-			index = get_best_mov(*a, i, proximate, 1);
+			index = get_best_mov(*a, i, proximate, &conf);
 			push_to_b(a, b, index, "pb");
+			if (conf == 0)
+				conf = rotate_one(b);
 			i++;
-			// affstack(*a, *b);
 		}
 	else
 		while (n - 1 >= 0)
 		{
-			index = get_best_mov(*a, n - 1, proximate, 0);
+			index = get_best_mov(*a, n - 1, proximate, &conf);
 			push_to_b(a, b, index, "pa");
 			n--;
-			// affstack(*b, *a);
 		}
 }
 
@@ -132,6 +143,8 @@ int main(int ac, char **av)
 		a->order = get_index(a->value, list, ac - 1);
 		a = a->next;
 	}
+	if (check_if_sorted(head1))
+		return (0);
 	push_swap(&head1, &head2, ac - 1, 1);
 	push_swap(&head2, &head1, ac - 1, 0);
 	// affstack(head1, head2);
